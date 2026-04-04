@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Tarea 1 - Usuario y actividades</title>
+  <style>
+    body { font-family: sans-serif; max-width: 700px; margin: 30px auto; padding: 0 16px; }
+    .error { color: #c0392b; font-size: 0.85em; display: none; }
+    .error.visible { display: block; }
+    .actividad-item, .usuario-item { border: 1px solid #ccc; padding: 10px; margin: 8px 0; border-radius: 4px; }
+    .actividad-item .tipo, .usuario-item .rut { font-size: 0.8em; color: #666; text-transform: uppercase; }
+    .actividad-item .usuario { font-size: 0.8em; color: #666; }
+    .actividad-item .nombre, .usuario-item .grado { font-weight: bold; }
+    .contador { color: #666; font-size: 0.9em; margin-bottom: 10px; }
+    .busqueda-usuarios, .busqueda-actividades { margin-bottom: 10px; }
+    label { display: block; margin-bottom: 4px; }
+    input, select { width: 100%; max-width: 320px; padding: 6px; margin-top: 4px; }
+    button { margin-top: 10px; padding: 8px 14px; }
+    section { margin-bottom: 24px; }
+    .tabs { display: flex; border-bottom: 2px solid #ccc; margin-bottom: 20px; }
+    .tab-button { background: none; border: none; padding: 10px 20px; cursor: pointer; font-size: 1em; color: #666; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+    .tab-button.activo { color: #333; border-bottom-color: #0066cc; }
+    .tab-content { display: none; }
+    .tab-content.activo { display: block; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <h1>Registro de usuario y actividades</h1>
+
+  <div class="tabs">
+    <button class="tab-button activo" data-tab="tab-registro">Registro</button>
+    <button class="tab-button" data-tab="tab-listas">Listas</button>
+    <button class="tab-button" data-tab="tab-graficos">Gráficos</button>
+  </div>
+
+  <div id="tab-registro" class="tab-content activo">
+    <h2>Crear usuario</h2>
+    <form id="form-usuario">
+      <div>
+        <label for="rut">RUT (obligatorio):</label>
+        <input type="text" id="rut">
+        <span class="error" id="error-rut">Debe ingresar un RUT.</span>
+      </div>
+      <br>
+      <div>
+        <label for="nombre-usuario">Nombre (obligatorio):</label>
+        <input type="text" id="nombre-usuario">
+        <span class="error" id="error-nombre-usuario">Debe ingresar un nombre.</span>
+      </div>
+      <br>
+      <div>
+        <label for="numero-telefonico">Número telefónico (obligatorio):</label>
+        <input type="text" id="numero-telefonico">
+        <span class="error" id="error-telefono">Debe ingresar un número telefónico.</span>
+      </div>
+      <br>
+      <div>
+        <label for="email">Email (opcional):</label>
+        <input type="email" id="email">
+      </div>
+      <br>
+      <div>
+        <label for="grado-academico">Grado académico (obligatorio):</label>
+        <input type="text" id="grado-academico">
+        <span class="error" id="error-grado">Debe ingresar un grado académico.</span>
+      </div>
+      <br>
+      <button type="submit">Crear usuario</button>
+    </form>
+    <br><hr><br>
+    <h2>Registrar actividad</h2>
+    <form id="form-actividad">
+      <div>
+        <label for="usuario-actividad">Usuario existente:</label>
+        <select id="usuario-actividad" disabled>
+          <option value="">-- Seleccione usuario --</option>
+        </select>
+        <span class="error" id="error-usuario">Debe seleccionar un usuario existente.</span>
+      </div>
+      <br>
+      <div>
+        <label for="nombre-actividad">Nombre de la actividad:</label>
+        <input type="text" id="nombre-actividad">
+        <span class="error" id="error-nombre">Debe ingresar un nombre (mínimo 3 caracteres).</span>
+      </div>
+      <br>
+      <div>
+        <label for="tipo-actividad">Tipo:</label>
+        <select id="tipo-actividad">
+          <option value="">-- Seleccione --</option>
+          <option value="deportiva">Deportiva</option>
+          <option value="artistica">Artística</option>
+          <option value="tecnologica">Tecnológica</option>
+          <option value="social">Social</option>
+          <option value="recreativa">Recreativa</option>
+        </select>
+        <span class="error" id="error-tipo">Debe seleccionar un tipo.</span>
+      </div>
+      <br>
+      <div>
+        <label for="fecha-actividad">Fecha de la actividad:</label>
+        <input type="date" id="fecha-actividad">
+        <span class="error" id="error-fecha">Debe seleccionar una fecha.</span>
+      </div>
+      <br>
+      <div>
+        <label for="horas-actividad">Duración de la actividad (horas):</label>
+        <input type="number" id="horas-actividad" min="1" max="24">
+        <span class="error" id="error-horas">Ingrese una duración entre 1 y 24 horas.</span>
+      </div>
+      <br>
+      <div>
+        <label for="foto-actividad">Foto/Link de la actividad (obligatorio):</label>
+        <input type="url" id="foto-actividad" placeholder="https://www.youtube.com/watch?v=fZMz0qXf4zs">
+        <span class="error" id="error-foto">Debe proporcionar una URL válida (ej: https://...).</span>
+      </div>
+      <br>
+      <button type="submit">Agregar actividad</button>
+    </form>
+  </div>
+
+  <div id="tab-listas" class="tab-content">
+    <h2>Usuarios registrados</h2>
+    <div class="busqueda-usuarios">
+      <label for="buscar-usuario">Buscar usuario:</label>
+      <input type="text" id="buscar-usuario" placeholder="Buscar por RUT, nombre, teléfono, email o grado">
+    </div>
+    <table id="tabla-usuarios" style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr style="background-color: #f2f2f2;">
+          <th style="border: 1px solid #ccc; padding: 8px;">RUT</th>
+          <th style="border: 1px solid #ccc; padding: 8px;">Nombre</th>
+          <th style="border: 1px solid #ccc; padding: 8px;">Teléfono</th>
+          <th style="border: 1px solid #ccc; padding: 8px;">Email</th>
+          <th style="border: 1px solid #ccc; padding: 8px;">Grado</th>
+        </tr>
+      </thead>
+      <tbody id="cuerpo-tabla-usuarios">
+      </tbody>
+    </table>
+
+    <br><hr><br>
+
+    <h2>Actividades registradas</h2>
+    <div class="busqueda-actividades">
+      <label for="buscar-actividad">Buscar actividad:</label>
+      <input type="text" id="buscar-actividad" placeholder="Buscar por nombre, tipo, fecha o usuario">
+    </div>
+    <p class="contador">Total: <span id="total-actividades">0</span> actividades</p>
+    <div id="lista-actividades"></div>
+  </div>
+
+  <div id="tab-graficos" class="tab-content">
+    <h2>Gráficos - Actividades por tipo</h2>
+    <div style="width: 80%; max-width: 500px; margin: 20px auto;">
+      <canvas id="grafico-pastel"></canvas>
+    </div>
+  </div>
+
+    <script src="usuario.js"></script>
+    <script src="actividades.js"></script>
+    <script src="grafico.js"></script>
+</body>
+</html>
