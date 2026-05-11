@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrar miembro y actividades{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h2>Registrar miembro y actividades</h2>
+  <form id="registro-form" method="POST" enctype="multipart/form-data" novalidate>
+    <fieldset>
+      <legend>Datos del miembro</legend>
+
+      <label for="rut">RUT (obligatorio)</label>
+      <input type="text" id="rut" name="rut" value="{{ miembro.rut }}">
+      <span class="error {% if errores_miembro.get('rut') %}visible{% endif %}" id="error-rut">{{ errores_miembro.get('rut', 'Debe ingresar un RUT.') }}</span>
+
+      <label for="nombre">Nombre (obligatorio)</label>
+      <input type="text" id="nombre" name="nombre" value="{{ miembro.nombre }}">
+      <span class="error {% if errores_miembro.get('nombre') %}visible{% endif %}" id="error-nombre">{{ errores_miembro.get('nombre', 'Debe ingresar un nombre.') }}</span>
+
+      <label for="telefono">Numero telefonico (obligatorio)</label>
+      <input type="text" id="telefono" name="telefono" value="{{ miembro.telefono }}">
+      <span class="error {% if errores_miembro.get('telefono') %}visible{% endif %}" id="error-telefono">{{ errores_miembro.get('telefono', 'Debe ingresar un numero telefonico.') }}</span>
+
+      <label for="email">Email (opcional)</label>
+      <input type="email" id="email" name="email" value="{{ miembro.email }}">
+      <span class="error {% if errores_miembro.get('email') %}visible{% endif %}" id="error-email">{{ errores_miembro.get('email', 'Debe ingresar un email valido.') }}</span>
+
+      <label for="grado_academico">Grado academico (obligatorio)</label>
+      <input type="text" id="grado_academico" name="grado_academico" value="{{ miembro.grado_academico }}">
+      <span class="error {% if errores_miembro.get('grado_academico') %}visible{% endif %}" id="error-grado">{{ errores_miembro.get('grado_academico', 'Debe ingresar un grado academico.') }}</span>
+    </fieldset>
+
+    <fieldset>
+      <legend>Actividades</legend>
+      <p class="hint">Puede agregar una o mas actividades y cada actividad puede tener multiples fotos.</p>
+
+      <div id="actividades-contenedor">
+        {% for actividad in actividades %}
+          <article class="actividad-bloque" data-index="{{ loop.index0 }}">
+            <h3>Actividad {{ loop.index }}</h3>
+
+            <label>Nombre de la actividad</label>
+            <input type="text" name="actividad_nombre[]" value="{{ actividad.nombre }}">
+
+            <label>Tipo</label>
+            <select name="actividad_tipo[]">
+              <option value="">-- Seleccione --</option>
+              {% for tipo in tipos %}
+                <option value="{{ tipo }}" {% if actividad.tipo == tipo %}selected{% endif %}>{{ tipo.capitalize() }}</option>
+              {% endfor %}
+            </select>
+
+            <label>Fecha</label>
+            <input type="date" name="actividad_fecha[]" value="{{ actividad.fecha }}">
+
+            <label>Duracion (horas)</label>
+            <input type="number" name="actividad_horas[]" min="1" max="24" value="{{ actividad.horas }}">
+
+            <label>Fotos</label>
+            <input type="file" name="actividad_fotos_{{ loop.index0 }}" accept="image/*" multiple>
+
+            <div class="errores-actividad">
+              {% for error in errores_actividades %}
+                {% if error.index == loop.index0 %}
+                  <span class="error visible">{{ error.message }}</span>
+                {% endif %}
+              {% endfor %}
+            </div>
+
+            {% if not loop.first %}
+              <button type="button" class="button-link remover-actividad">Eliminar actividad</button>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+
+      <button type="button" id="agregar-actividad">Agregar otra actividad</button>
+    </fieldset>
+
+    <button type="submit" class="button-primary">Guardar registro</button>
+  </form>
+</section>
+
+<template id="actividad-template">
+  <article class="actividad-bloque" data-index="__INDEX__">
+    <h3>Actividad __NUM__</h3>
+
+    <label>Nombre de la actividad</label>
+    <input type="text" name="actividad_nombre[]">
+
+    <label>Tipo</label>
+    <select name="actividad_tipo[]">
+      <option value="">-- Seleccione --</option>
+      {% for tipo in tipos %}
+        <option value="{{ tipo }}">{{ tipo.capitalize() }}</option>
+      {% endfor %}
+    </select>
+
+    <label>Fecha</label>
+    <input type="date" name="actividad_fecha[]">
+
+    <label>Duracion (horas)</label>
+    <input type="number" name="actividad_horas[]" min="1" max="24">
+
+    <label>Fotos</label>
+    <input type="file" name="actividad_fotos___INDEX__" accept="image/*" multiple>
+
+    <div class="errores-actividad"></div>
+
+    <button type="button" class="button-link remover-actividad">Eliminar actividad</button>
+  </article>
+</template>
+
+<script src="{{ url_for('static', filename='js/register.js') }}"></script>
+{% endblock %}
