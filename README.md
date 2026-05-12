@@ -65,6 +65,38 @@ cp .env.example .env
 python app.py
 ```
 
+### Nota para este dev container (Ubuntu 24.04)
+
+En este entorno, para abrir la pagina sin errores fue necesario:
+
+1. Instalar soporte de venv y MySQL:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y python3.12-venv mysql-server
+```
+
+2. Crear entorno virtual e instalar dependencias:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+```
+
+3. Iniciar MySQL, cargar esquema y asegurar acceso por TCP para `root@127.0.0.1`:
+
+```bash
+sudo service mysql start
+sudo mysql -e "CREATE USER IF NOT EXISTS 'root'@'127.0.0.1' IDENTIFIED BY 'root'; ALTER USER 'root'@'127.0.0.1' IDENTIFIED BY 'root'; GRANT ALL PRIVILEGES ON *.* TO 'root'@'127.0.0.1' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+mysql -h 127.0.0.1 -uroot -proot < schema.sql
+```
+
+4. Levantar la app con el entorno virtual:
+
+```bash
+.venv/bin/python app.py
+```
+
 5. Abrir en navegador:
 
 - `http://127.0.0.1:5000`
