@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle de miembro{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h2>Detalle de miembro</h2>
+  <div class="detalle-grid">
+    <p><strong>RUT:</strong> {{ miembro.rut }}</p>
+    <p><strong>Nombre:</strong> {{ miembro.nombre }}</p>
+    <p><strong>Telefono:</strong> {{ miembro.telefono }}</p>
+    <p><strong>Email:</strong> {{ miembro.email or 'N/A' }}</p>
+    <p><strong>Grado academico:</strong> {{ miembro.grado_academico }}</p>
+    <p><strong>Registro:</strong> {{ miembro.created_at.strftime('%d-%m-%Y %H:%M') }}</p>
+  </div>
+</section>
+
+<section class="card">
+  <h3>Actividades registradas</h3>
+  {% if actividades %}
+    <div class="actividades-listado">
+      {% for actividad in actividades %}
+        <article class="actividad-detalle">
+          <p><strong>Nombre:</strong> {{ actividad.nombre }}</p>
+          <p><strong>Tipo:</strong> {{ actividad.tipo.capitalize() }}</p>
+          <p><strong>Fecha:</strong> {{ actividad.fecha.strftime('%d-%m-%Y') }}</p>
+          <p><strong>Duracion:</strong> {{ actividad.horas }} horas</p>
+
+          <div class="galeria-fotos">
+            {% for foto in actividad.fotos %}
+              <figure>
+                <img src="{{ url_for('static', filename=foto.ruta_archivo) }}" alt="{{ foto.nombre_original }}">
+                <figcaption>{{ foto.nombre_original }}</figcaption>
+              </figure>
+            {% else %}
+              <p>Sin fotos asociadas.</p>
+            {% endfor %}
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>Este miembro aun no tiene actividades registradas.</p>
+  {% endif %}
+</section>
+{% endblock %}
