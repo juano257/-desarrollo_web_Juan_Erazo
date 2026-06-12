@@ -19,6 +19,7 @@ function validarMiembroCliente() {
   const telefono = document.getElementById("telefono").value.trim();
   const email = document.getElementById("email").value.trim();
   const grado = document.getElementById("grado_academico").value.trim();
+  const comuna = document.getElementById("comuna").value.trim();
 
   const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
   let valido = true;
@@ -28,6 +29,7 @@ function validarMiembroCliente() {
   toggleError(document.getElementById("error-telefono"), false);
   toggleError(document.getElementById("error-email"), false);
   toggleError(document.getElementById("error-grado"), false);
+  toggleError(document.getElementById("error-comuna"), false);
 
   if (!rut) {
     toggleError(document.getElementById("error-rut"), true);
@@ -47,6 +49,10 @@ function validarMiembroCliente() {
   }
   if (!grado) {
     toggleError(document.getElementById("error-grado"), true);
+    valido = false;
+  }
+  if (!comuna) {
+    toggleError(document.getElementById("error-comuna"), true);
     valido = false;
   }
 

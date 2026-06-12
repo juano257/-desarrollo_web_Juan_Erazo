@@ -79,12 +79,19 @@ label {
 
 input,
 select,
+textarea,
 button {
   width: 100%;
   max-width: 540px;
   padding: 0.55rem;
   border: 1px solid #b8c0cc;
   border-radius: 6px;
+}
+
+textarea {
+  min-height: 110px;
+  resize: vertical;
+  font-family: inherit;
 }
 
 button {
@@ -219,6 +226,56 @@ button {
   gap: 0.5rem 1rem;
 }
 
+.graficos-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.grafico-panel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.8rem;
+  overflow-x: auto;
+}
+
+.grafico-panel h3 {
+  margin-top: 0;
+}
+
+.grafico-panel canvas {
+  width: 100%;
+  height: 320px;
+  display: block;
+}
+
+.comentarios {
+  border-top: 1px solid var(--line);
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.comentario-form {
+  margin-top: 1rem;
+}
+
+.comentario-item {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.7rem;
+  margin: 0.6rem 0;
+  background: #f8fbfd;
+}
+
+.comentario-item p {
+  margin: 0.25rem 0;
+}
+
+.comentario-meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
 @media (max-width: 720px) {
   .menu-principal {
     flex-direction: column;
@@ -226,6 +283,7 @@ button {
 
   input,
   select,
+  textarea,
   button {
     max-width: 100%;
   }

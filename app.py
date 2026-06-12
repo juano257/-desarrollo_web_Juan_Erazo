@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
-from flask import Flask, flash, redirect, render_template, request, url_for
+from flask import Flask, flash, jsonify, redirect, render_template, request, url_for
 from werkzeug.utils import secure_filename
 
 from db import get_db_connection
@@ -37,6 +37,7 @@ def _normalizar_miembro_desde_form(form):
         "telefono": form.get("telefono", "").strip(),
         "email": form.get("email", "").strip(),
         "grado_academico": form.get("grado_academico", "").strip(),
+        "comuna": form.get("comuna", "").strip(),
     }
 
 
@@ -75,6 +76,8 @@ def _validar_miembro(miembro):
         errores["telefono"] = "Debe ingresar un numero telefonico."
     if not miembro["grado_academico"]:
         errores["grado_academico"] = "Debe ingresar un grado academico."
+    if not miembro["comuna"]:
+        errores["comuna"] = "Debe ingresar una comuna."
     if miembro["email"] and not EMAIL_REGEX.match(miembro["email"]):
         errores["email"] = "Debe ingresar un email valido."
 
@@ -124,19 +127,24 @@ def _validar_actividades(actividades, files):
 
 @app.get("/")
 def portada():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute(
-        """
-        SELECT id, rut, nombre, telefono, email, grado_academico, created_at
-        FROM miembro
-        ORDER BY created_at DESC
-        LIMIT 5
-        """
-    )
-    ultimos_miembros = cursor.fetchall()
-    cursor.close()
-    conn.close()
+    ultimos_miembros = []
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT id, rut, nombre, telefono, email, grado_academico, comuna, created_at
+            FROM miembro
+            ORDER BY created_at DESC
+            LIMIT 5
+            """
+        )
+        ultimos_miembros = cursor.fetchall()
+        cursor.close()
+        conn.close()
+    except Exception:
+        flash("No se pudo conectar a MySQL. Se muestra la portada sin datos.", "error")
 
     return render_template("index.html", ultimos_miembros=ultimos_miembros)
 
@@ -149,6 +157,7 @@ def registrar_miembro_actividades():
         "telefono": "",
         "email": "",
         "grado_academico": "",
+        "comuna": "",
     }
     actividades = [
         {
@@ -181,8 +190,8 @@ def registrar_miembro_actividades():
             try:
                 cursor.execute(
                     """
-                    INSERT INTO miembro (rut, nombre, telefono, email, grado_academico)
-                    VALUES (%s, %s, %s, %s, %s)
+                    INSERT INTO miembro (rut, nombre, telefono, email, grado_academico, comuna)
+                    VALUES (%s, %s, %s, %s, %s, %s)
                     """,
                     (
                         miembro["rut"],
@@ -190,6 +199,7 @@ def registrar_miembro_actividades():
                         miembro["telefono"],
                         miembro["email"] or None,
                         miembro["grado_academico"],
+                        miembro["comuna"],
                     ),
                 )
                 miembro_id = cursor.lastrowid
@@ -260,25 +270,30 @@ def listado_miembros():
     page = max(page, 1)
     offset = (page - 1) * per_page
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT COUNT(*) AS total FROM miembro")
-    total = cursor.fetchone()["total"]
+        cursor.execute("SELECT COUNT(*) AS total FROM miembro")
+        total = cursor.fetchone()["total"]
 
-    cursor.execute(
-        """
-        SELECT id, rut, nombre, telefono, email, grado_academico, created_at
-        FROM miembro
-        ORDER BY created_at DESC
-        LIMIT %s OFFSET %s
-        """,
-        (per_page, offset),
-    )
-    miembros = cursor.fetchall()
+        cursor.execute(
+            """
+            SELECT id, rut, nombre, telefono, email, grado_academico, comuna, created_at
+            FROM miembro
+            ORDER BY created_at DESC
+            LIMIT %s OFFSET %s
+            """,
+            (per_page, offset),
+        )
+        miembros = cursor.fetchall()
 
-    cursor.close()
-    conn.close()
+        cursor.close()
+        conn.close()
+    except Exception:
+        flash("No se pudo conectar a MySQL. Se muestra el listado sin datos.", "error")
+        total = 0
+        miembros = []
 
     total_pages = (total + per_page - 1) // per_page if total > 0 else 1
 
@@ -297,7 +312,7 @@ def detalle_miembro(miembro_id):
 
     cursor.execute(
         """
-        SELECT id, rut, nombre, telefono, email, grado_academico, created_at
+        SELECT id, rut, nombre, telefono, email, grado_academico, comuna, created_at
         FROM miembro
         WHERE id = %s
         """,
@@ -343,6 +358,164 @@ def detalle_miembro(miembro_id):
 @app.get("/estadisticas")
 def estadisticas():
     return render_template("stats.html")
+
+
+@app.get("/api/estadisticas")
+def api_estadisticas():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute(
+            """
+            SELECT DATE(created_at) AS dia, COUNT(*) AS total
+            FROM miembro
+            GROUP BY DATE(created_at)
+            ORDER BY dia ASC
+            """
+        )
+        miembros_por_dia = [
+            {"dia": row["dia"].strftime("%Y-%m-%d"), "total": row["total"]}
+            for row in cursor.fetchall()
+        ]
+
+        cursor.execute(
+            """
+            SELECT tipo, COUNT(*) AS total
+            FROM actividad
+            GROUP BY tipo
+            ORDER BY tipo ASC
+            """
+        )
+        actividades_por_tipo = cursor.fetchall()
+
+        cursor.execute(
+            """
+            SELECT m.comuna, COUNT(a.id) AS total
+            FROM miembro m
+            JOIN actividad a ON a.miembro_id = m.id
+            GROUP BY m.comuna
+            ORDER BY m.comuna ASC
+            """
+        )
+        actividades_por_comuna = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+    except Exception:
+        miembros_por_dia = []
+        actividades_por_tipo = []
+        actividades_por_comuna = []
+
+    return jsonify(
+        {
+            "miembros_por_dia": miembros_por_dia,
+            "actividades_por_tipo": actividades_por_tipo,
+            "actividades_por_comuna": actividades_por_comuna,
+        }
+    )
+
+
+def _validar_comentario(data):
+    nombre = data.get("nombre", "").strip()
+    texto = data.get("texto", "").strip()
+    errores = {}
+
+    if len(nombre) < 3 or len(nombre) > 80:
+        errores["nombre"] = "El nombre debe tener entre 3 y 80 caracteres."
+    if len(texto) < 5:
+        errores["texto"] = "El comentario debe tener al menos 5 caracteres."
+    if len(texto) > 300:
+        errores["texto"] = "El comentario no puede superar los 300 caracteres."
+
+    return nombre, texto, errores
+
+
+@app.get("/api/actividades/<int:actividad_id>/comentarios")
+def api_listar_comentarios(actividad_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT id FROM actividad WHERE id = %s", (actividad_id,))
+    if not cursor.fetchone():
+        cursor.close()
+        conn.close()
+        return jsonify({"error": "Actividad no encontrada."}), 404
+
+    cursor.execute(
+        """
+        SELECT id, nombre, texto, fecha
+        FROM comentario
+        WHERE actividad_id = %s
+        ORDER BY fecha DESC, id DESC
+        """,
+        (actividad_id,),
+    )
+    comentarios = [
+        {
+            "id": row["id"],
+            "nombre": row["nombre"],
+            "texto": row["texto"],
+            "fecha": row["fecha"].strftime("%d-%m-%Y %H:%M"),
+        }
+        for row in cursor.fetchall()
+    ]
+
+    cursor.close()
+    conn.close()
+    return jsonify({"comentarios": comentarios})
+
+
+@app.post("/api/actividades/<int:actividad_id>/comentarios")
+def api_agregar_comentario(actividad_id):
+    data = request.get_json(silent=True) or {}
+    nombre, texto, errores = _validar_comentario(data)
+
+    if errores:
+        return jsonify({"errores": errores}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT id FROM actividad WHERE id = %s", (actividad_id,))
+    if not cursor.fetchone():
+        cursor.close()
+        conn.close()
+        return jsonify({"error": "Actividad no encontrada."}), 404
+
+    cursor.execute(
+        """
+        INSERT INTO comentario (nombre, texto, fecha, actividad_id)
+        VALUES (%s, %s, NOW(), %s)
+        """,
+        (nombre, texto, actividad_id),
+    )
+    conn.commit()
+
+    comentario_id = cursor.lastrowid
+    cursor.execute(
+        """
+        SELECT id, nombre, texto, fecha
+        FROM comentario
+        WHERE id = %s
+        """,
+        (comentario_id,),
+    )
+    row = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify(
+        {
+            "comentario": {
+                "id": row["id"],
+                "nombre": row["nombre"],
+                "texto": row["texto"],
+                "fecha": row["fecha"].strftime("%d-%m-%Y %H:%M"),
+            }
+        }
+    ), 201
 
 
 if __name__ == "__main__":

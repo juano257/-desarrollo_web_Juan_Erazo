@@ -23,6 +23,23 @@ Se agrego una aplicacion web con Flask y MySQL que implementa:
 - Vista de detalle por miembro (actividades y fotos).
 - Seccion de estadisticas pendiente para la siguiente tarea.
 
+## Tarea 3 (estadisticas y comentarios)
+
+Se agrego la funcionalidad solicitada en el enunciado:
+
+- Pagina de estadisticas con 3 graficos generados en el cliente con `fetch` y canvas:
+  - miembros registrados por dia;
+  - actividades por tipo;
+  - actividades por comuna.
+- Endpoint `/api/estadisticas` que obtiene los datos desde MySQL.
+- Campo `comuna` en los miembros para alimentar el grafico de actividades por comuna.
+- Tabla `comentario` asociada a `actividad`.
+- Listado y formulario de comentarios bajo cada actividad en la vista de detalle.
+- Endpoints asincronos para comentarios:
+  - `GET /api/actividades/<id>/comentarios`
+  - `POST /api/actividades/<id>/comentarios`
+- Validacion de comentarios en JavaScript y nuevamente en Flask.
+
 ### Estructura principal agregada
 
 - `app.py`: rutas Flask y logica de validacion/persistencia.
@@ -32,6 +49,8 @@ Se agrego una aplicacion web con Flask y MySQL que implementa:
 - `static/css/styles.css`: estilos.
 - `static/js/register.js`: validaciones cliente y manejo de actividades dinamicas.
 - `static/js/members.js`: fila clicable en listado.
+- `static/js/stats.js`: carga y dibujo de graficos con `fetch`.
+- `static/js/comments.js`: listado y envio asincrono de comentarios.
 - `.env.example`: variables de entorno de referencia.
 
 ## Requisitos
@@ -51,6 +70,12 @@ pip install -r requirements.txt
 
 ```bash
 mysql -u root -p < schema.sql
+```
+
+Si ya tenia creada la base de datos de la Tarea 2, aplicar solo la migracion de Tarea 3:
+
+```bash
+mysql -u root -p club_db < migracion_tarea3.sql
 ```
 
 3. Configurar variables de entorno:

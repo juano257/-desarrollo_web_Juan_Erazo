@@ -11,6 +11,7 @@
     <p><strong>Telefono:</strong> {{ miembro.telefono }}</p>
     <p><strong>Email:</strong> {{ miembro.email or 'N/A' }}</p>
     <p><strong>Grado academico:</strong> {{ miembro.grado_academico }}</p>
+    <p><strong>Comuna:</strong> {{ miembro.comuna }}</p>
     <p><strong>Registro:</strong> {{ miembro.created_at.strftime('%d-%m-%Y %H:%M') }}</p>
   </div>
 </section>
@@ -36,6 +37,25 @@
               <p>Sin fotos asociadas.</p>
             {% endfor %}
           </div>
+
+          <section class="comentarios" data-actividad-id="{{ actividad.id }}">
+            <h4>Comentarios</h4>
+            <div class="comentarios-lista" aria-live="polite">
+              <p class="hint">Cargando comentarios...</p>
+            </div>
+
+            <form class="comentario-form" novalidate>
+              <label for="comentario-nombre-{{ actividad.id }}">Nombre comentarista</label>
+              <input type="text" id="comentario-nombre-{{ actividad.id }}" name="nombre" minlength="3" maxlength="80" required>
+              <span class="error" data-error="nombre"></span>
+
+              <label for="comentario-texto-{{ actividad.id }}">Comentario</label>
+              <textarea id="comentario-texto-{{ actividad.id }}" name="texto" rows="4" cols="50" minlength="5" maxlength="300" required></textarea>
+              <span class="error" data-error="texto"></span>
+
+              <button type="submit" class="button-primary">Agregar comentario</button>
+            </form>
+          </section>
         </article>
       {% endfor %}
     </div>
@@ -43,4 +63,6 @@
     <p>Este miembro aun no tiene actividades registradas.</p>
   {% endif %}
 </section>
+
+<script src="{{ url_for('static', filename='js/comments.js') }}"></script>
 {% endblock %}

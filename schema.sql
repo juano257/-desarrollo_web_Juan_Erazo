@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS miembro (
     telefono VARCHAR(25) NOT NULL,
     email VARCHAR(150) NULL,
     grado_academico VARCHAR(120) NOT NULL,
+    comuna VARCHAR(120) NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -35,4 +36,18 @@ CREATE TABLE IF NOT EXISTS foto (
         FOREIGN KEY (actividad_id)
         REFERENCES actividad (id)
         ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS comentario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(80) NOT NULL,
+    texto VARCHAR(300) NOT NULL,
+    fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actividad_id INT NOT NULL,
+    INDEX fk_comentario_actividad1_idx (actividad_id ASC),
+    CONSTRAINT fk_comentario_actividad1
+        FOREIGN KEY (actividad_id)
+        REFERENCES actividad (id)
+        ON DELETE CASCADE
+        ON UPDATE NO ACTION
 );

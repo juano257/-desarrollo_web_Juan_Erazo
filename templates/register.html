@@ -28,6 +28,10 @@
       <label for="grado_academico">Grado academico (obligatorio)</label>
       <input type="text" id="grado_academico" name="grado_academico" value="{{ miembro.grado_academico }}">
       <span class="error {% if errores_miembro.get('grado_academico') %}visible{% endif %}" id="error-grado">{{ errores_miembro.get('grado_academico', 'Debe ingresar un grado academico.') }}</span>
+
+      <label for="comuna">Comuna (obligatorio)</label>
+      <input type="text" id="comuna" name="comuna" value="{{ miembro.comuna }}">
+      <span class="error {% if errores_miembro.get('comuna') %}visible{% endif %}" id="error-comuna">{{ errores_miembro.get('comuna', 'Debe ingresar una comuna.') }}</span>
     </fieldset>
 
     <fieldset>
