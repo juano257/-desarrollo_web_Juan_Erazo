@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Listado de miembros{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h2>Listado de miembros</h2>
+
+  {% if miembros %}
+    <table class="tabla tabla-clicable">
+      <thead>
+        <tr>
+          <th>RUT</th>
+          <th>Nombre</th>
+          <th>Telefono</th>
+          <th>Email</th>
+          <th>Grado academico</th>
+          <th>Comuna</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for miembro in miembros %}
+          <tr data-href="{{ url_for('detalle_miembro', miembro_id=miembro.id) }}">
+            <td>{{ miembro.rut }}</td>
+            <td>{{ miembro.nombre }}</td>
+            <td>{{ miembro.telefono }}</td>
+            <td>{{ miembro.email or 'N/A' }}</td>
+            <td>{{ miembro.grado_academico }}</td>
+            <td>{{ miembro.comuna }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="paginacion">
+      {% if page > 1 %}
+        <a class="button-link" href="{{ url_for('listado_miembros', page=page-1) }}">Anterior</a>
+      {% else %}
+        <span class="button-link disabled">Anterior</span>
+      {% endif %}
+
+      <span>Pagina {{ page }} de {{ total_pages }}</span>
+
+      {% if page < total_pages %}
+        <a class="button-link" href="{{ url_for('listado_miembros', page=page+1) }}">Siguiente</a>
+      {% else %}
+        <span class="button-link disabled">Siguiente</span>
+      {% endif %}
+    </div>
+  {% else %}
+    <p>No hay miembros para mostrar.</p>
+  {% endif %}
+</section>
+
+<script src="{{ url_for('static', filename='js/members.js') }}"></script>
+{% endblock %}

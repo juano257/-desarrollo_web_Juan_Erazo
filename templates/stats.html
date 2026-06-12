@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Estadisticas{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h2>Estadisticas</h2>
+  <div class="graficos-grid">
+    <article class="grafico-panel">
+      <h3>Miembros registrados por dia</h3>
+      <canvas id="grafico-miembros-dia" width="640" height="320"></canvas>
+    </article>
+
+    <article class="grafico-panel">
+      <h3>Actividades por tipo</h3>
+      <canvas id="grafico-actividades-tipo" width="640" height="320"></canvas>
+    </article>
+
+    <article class="grafico-panel">
+      <h3>Actividades por comuna</h3>
+      <canvas id="grafico-actividades-comuna" width="640" height="320"></canvas>
+    </article>
+  </div>
+
+  <p id="estadisticas-error" class="error"></p>
+  <a class="button-link" href="{{ url_for('portada') }}">Volver a la portada</a>
+</section>
+
+<script src="{{ url_for('static', filename='js/stats.js') }}"></script>
+{% endblock %}
