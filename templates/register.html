@@ -46,6 +46,9 @@
             <label>Nombre de la actividad</label>
             <input type="text" name="actividad_nombre[]" value="{{ actividad.nombre }}">
 
+            <label>Descripcion</label>
+            <textarea name="actividad_descripcion[]" rows="3">{{ actividad.descripcion }}</textarea>
+
             <label>Tipo</label>
             <select name="actividad_tipo[]">
               <option value="">-- Seleccione --</option>
@@ -91,6 +94,9 @@
 
     <label>Nombre de la actividad</label>
     <input type="text" name="actividad_nombre[]">
+
+    <label>Descripcion</label>
+    <textarea name="actividad_descripcion[]" rows="3"></textarea>
 
     <label>Tipo</label>
     <select name="actividad_tipo[]">

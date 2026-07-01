@@ -61,6 +61,7 @@ function validarMiembroCliente() {
 
 function validarActividadBloque(actividadBloque) {
   const nombre = actividadBloque.querySelector('input[name="actividad_nombre[]"]').value.trim();
+  const descripcion = actividadBloque.querySelector('textarea[name="actividad_descripcion[]"]').value.trim();
   const tipo = actividadBloque.querySelector('select[name="actividad_tipo[]"]').value;
   const fecha = actividadBloque.querySelector('input[name="actividad_fecha[]"]').value;
   const horas = actividadBloque.querySelector('input[name="actividad_horas[]"]').value;
@@ -73,6 +74,9 @@ function validarActividadBloque(actividadBloque) {
 
   if (nombre.length < 3) {
     mensajes.push("El nombre de la actividad debe tener al menos 3 caracteres.");
+  }
+  if (descripcion.length < 5) {
+    mensajes.push("La descripcion de la actividad debe tener al menos 5 caracteres.");
   }
   if (!tipo) {
     mensajes.push("Debe seleccionar un tipo de actividad.");

@@ -23,6 +23,7 @@
       {% for actividad in actividades %}
         <article class="actividad-detalle">
           <p><strong>Nombre:</strong> {{ actividad.nombre }}</p>
+          <p><strong>Descripcion:</strong> {{ actividad.descripcion }}</p>
           <p><strong>Tipo:</strong> {{ actividad.tipo.capitalize() }}</p>
           <p><strong>Fecha:</strong> {{ actividad.fecha.strftime('%d-%m-%Y') }}</p>
           <p><strong>Duracion:</strong> {{ actividad.horas }} horas</p>

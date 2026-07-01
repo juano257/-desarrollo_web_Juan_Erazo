@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS actividad (
     id INT AUTO_INCREMENT PRIMARY KEY,
     miembro_id INT NOT NULL,
     nombre VARCHAR(150) NOT NULL,
+    descripcion VARCHAR(500) NOT NULL,
     tipo VARCHAR(50) NOT NULL,
     fecha DATE NOT NULL,
     horas TINYINT UNSIGNED NOT NULL,
@@ -24,6 +25,20 @@ CREATE TABLE IF NOT EXISTS actividad (
         FOREIGN KEY (miembro_id)
         REFERENCES miembro (id)
         ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS nota (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    actividad_id INT NOT NULL,
+    valor TINYINT UNSIGNED NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_nota_valor CHECK (valor BETWEEN 1 AND 7),
+    INDEX fk_nota_actividad_idx (actividad_id ASC),
+    CONSTRAINT fk_nota_actividad
+        FOREIGN KEY (actividad_id)
+        REFERENCES actividad (id)
+        ON DELETE CASCADE
+        ON UPDATE NO ACTION
 );
 
 CREATE TABLE IF NOT EXISTS foto (

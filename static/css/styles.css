@@ -276,6 +276,30 @@ button {
   font-size: 0.85rem;
 }
 
+.resultados {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.resultado-item {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.9rem;
+  background: #f8fbfd;
+}
+
+.resultado-item h3 {
+  margin-top: 0;
+}
+
+mark {
+  background: #ffe8a3;
+  color: #1f2a37;
+  padding: 0 0.15rem;
+  border-radius: 2px;
+}
+
 @media (max-width: 720px) {
   .menu-principal {
     flex-direction: column;

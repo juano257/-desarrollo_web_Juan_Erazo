@@ -53,6 +53,18 @@ Se agrego la funcionalidad solicitada en el enunciado:
 - `static/js/comments.js`: listado y envio asincrono de comentarios.
 - `.env.example`: variables de entorno de referencia.
 
+## Tarea 4 (buscador de actividades y notas)
+
+Se agrego la funcionalidad solicitada para la busqueda y evaluacion de actividades:
+
+- Nueva pagina de buscador de actividades con input unico y busqueda automatica al escribir 3+ caracteres.
+- Busqueda por coincidencia parcial en nombre, descripcion o comuna.
+- Resultados con miembro, dia, tipo, comuna, nombre, descripcion y nota promedio.
+- Resaltado visual del texto que calza con el patron buscado.
+- Opcion de evaluar por actividad (nota entera entre 1 y 7).
+- Insercion asincrona de notas y actualizacion inmediata de promedio y contador de evaluaciones.
+- Nueva tabla `nota` para almacenar evaluaciones por actividad.
+
 ## Requisitos
 
 - Python 3.10+
@@ -76,6 +88,12 @@ Si ya tenia creada la base de datos de la Tarea 2, aplicar solo la migracion de 
 
 ```bash
 mysql -u root -p club_db < migracion_tarea3.sql
+```
+
+Si ya tenia creada la base de datos de tareas previas, aplicar tambien migracion de Tarea 4:
+
+```bash
+mysql -u root -p club_db < migracion_tarea4.sql
 ```
 
 3. Configurar variables de entorno:

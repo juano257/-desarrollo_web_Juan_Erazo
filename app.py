@@ -43,23 +43,31 @@ def _normalizar_miembro_desde_form(form):
 
 def _normalizar_actividades_desde_form(form):
     nombres = form.getlist("actividad_nombre[]")
+    descripciones = form.getlist("actividad_descripcion[]")
     tipos = form.getlist("actividad_tipo[]")
     fechas = form.getlist("actividad_fecha[]")
     horas = form.getlist("actividad_horas[]")
 
-    max_len = max(len(nombres), len(tipos), len(fechas), len(horas), 1)
+    max_len = max(len(nombres), len(descripciones), len(tipos), len(fechas), len(horas), 1)
     actividades = []
 
     for i in range(max_len):
         actividad = {
             "index": i,
             "nombre": nombres[i].strip() if i < len(nombres) else "",
+            "descripcion": descripciones[i].strip() if i < len(descripciones) else "",
             "tipo": tipos[i].strip() if i < len(tipos) else "",
             "fecha": fechas[i].strip() if i < len(fechas) else "",
             "horas": horas[i].strip() if i < len(horas) else "",
         }
         # Descarta bloques completamente vacios para facilitar una UX flexible.
-        if any([actividad["nombre"], actividad["tipo"], actividad["fecha"], actividad["horas"]]):
+        if any([
+            actividad["nombre"],
+            actividad["descripcion"],
+            actividad["tipo"],
+            actividad["fecha"],
+            actividad["horas"],
+        ]):
             actividades.append(actividad)
 
     return actividades
@@ -95,6 +103,9 @@ def _validar_actividades(actividades, files):
 
         if len(actividad["nombre"]) < 3:
             errores.append({"index": idx, "message": "El nombre de la actividad debe tener al menos 3 caracteres."})
+
+        if len(actividad["descripcion"]) < 5:
+            errores.append({"index": idx, "message": "La descripcion de la actividad debe tener al menos 5 caracteres."})
 
         if actividad["tipo"] not in TIPOS_ACTIVIDAD:
             errores.append({"index": idx, "message": "Debe seleccionar un tipo de actividad valido."})
@@ -163,6 +174,7 @@ def registrar_miembro_actividades():
         {
             "index": 0,
             "nombre": "",
+            "descripcion": "",
             "tipo": "",
             "fecha": "",
             "horas": "",
@@ -207,12 +219,13 @@ def registrar_miembro_actividades():
                 for actividad in actividades:
                     cursor.execute(
                         """
-                        INSERT INTO actividad (miembro_id, nombre, tipo, fecha, horas)
-                        VALUES (%s, %s, %s, %s, %s)
+                        INSERT INTO actividad (miembro_id, nombre, descripcion, tipo, fecha, horas)
+                        VALUES (%s, %s, %s, %s, %s, %s)
                         """,
                         (
                             miembro_id,
                             actividad["nombre"],
+                            actividad["descripcion"],
                             actividad["tipo"],
                             actividad["fecha"],
                             int(actividad["horas"]),
@@ -328,7 +341,7 @@ def detalle_miembro(miembro_id):
 
     cursor.execute(
         """
-        SELECT id, nombre, tipo, fecha, horas
+        SELECT id, nombre, descripcion, tipo, fecha, horas
         FROM actividad
         WHERE miembro_id = %s
         ORDER BY fecha DESC, id DESC
@@ -358,6 +371,132 @@ def detalle_miembro(miembro_id):
 @app.get("/estadisticas")
 def estadisticas():
     return render_template("stats.html")
+
+
+@app.get("/buscador")
+def buscador_actividades():
+    return render_template("search.html")
+
+
+@app.get("/api/actividades/buscar")
+def api_buscar_actividades():
+    query = request.args.get("q", "").strip()
+
+    if len(query) < 3:
+        return jsonify({"actividades": []})
+
+    patron = f"%{query.lower()}%"
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute(
+        """
+        SELECT
+            a.id,
+            m.nombre AS miembro_nombre,
+            a.fecha,
+            a.tipo,
+            m.comuna,
+            a.nombre,
+            a.descripcion,
+            AVG(n.valor) AS nota_promedio,
+            COUNT(n.id) AS total_notas
+        FROM actividad a
+        JOIN miembro m ON m.id = a.miembro_id
+        LEFT JOIN nota n ON n.actividad_id = a.id
+        WHERE LOWER(a.nombre) LIKE %s
+           OR LOWER(a.descripcion) LIKE %s
+           OR LOWER(m.comuna) LIKE %s
+        GROUP BY a.id, m.nombre, a.fecha, a.tipo, m.comuna, a.nombre, a.descripcion
+        ORDER BY a.fecha DESC, a.id DESC
+        LIMIT 50
+        """,
+        (patron, patron, patron),
+    )
+    rows = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    actividades = []
+    for row in rows:
+        actividades.append(
+            {
+                "id": row["id"],
+                "miembro_nombre": row["miembro_nombre"],
+                "fecha": row["fecha"].strftime("%Y-%m-%d"),
+                "tipo": row["tipo"],
+                "comuna": row["comuna"],
+                "nombre": row["nombre"],
+                "descripcion": row["descripcion"],
+                "nota": "-" if row["total_notas"] == 0 else round(float(row["nota_promedio"]), 2),
+                "total_notas": row["total_notas"],
+            }
+        )
+
+    return jsonify({"actividades": actividades})
+
+
+def _validar_nota(valor):
+    if isinstance(valor, bool):
+        return None
+
+    try:
+        nota = int(valor)
+    except (TypeError, ValueError):
+        return None
+
+    if 1 <= nota <= 7:
+        return nota
+
+    return None
+
+
+@app.post("/api/actividades/<int:actividad_id>/notas")
+def api_agregar_nota(actividad_id):
+    data = request.get_json(silent=True) or {}
+    nota = _validar_nota(data.get("nota"))
+
+    if nota is None:
+        return jsonify({"error": "La nota debe ser un numero entero entre 1 y 7."}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT id FROM actividad WHERE id = %s", (actividad_id,))
+    if not cursor.fetchone():
+        cursor.close()
+        conn.close()
+        return jsonify({"error": "Actividad no encontrada."}), 404
+
+    cursor.execute(
+        """
+        INSERT INTO nota (actividad_id, valor)
+        VALUES (%s, %s)
+        """,
+        (actividad_id, nota),
+    )
+    conn.commit()
+
+    cursor.execute(
+        """
+        SELECT AVG(valor) AS nota_promedio, COUNT(*) AS total_notas
+        FROM nota
+        WHERE actividad_id = %s
+        """,
+        (actividad_id,),
+    )
+    resumen = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify(
+        {
+            "nota": round(float(resumen["nota_promedio"]), 2),
+            "total_notas": resumen["total_notas"],
+        }
+    ), 201
 
 
 @app.get("/api/estadisticas")

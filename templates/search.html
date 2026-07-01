@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Buscador de actividades{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h2>Buscador de actividades</h2>
+  <p class="hint">Escriba al menos 3 caracteres para buscar por nombre, descripcion o comuna.</p>
+
+  <label for="busqueda-actividades">Buscar</label>
+  <input
+    type="text"
+    id="busqueda-actividades"
+    name="q"
+    minlength="3"
+    maxlength="120"
+    autocomplete="off"
+    placeholder="Ejemplo: futbol, taller, nunoa"
+  >
+
+  <p id="busqueda-estado" class="hint" aria-live="polite">Esperando busqueda...</p>
+
+  <div id="busqueda-resultados" class="resultados"></div>
+</section>
+
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+{% endblock %}
