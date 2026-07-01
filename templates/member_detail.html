@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle de miembro{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h2>Detalle de miembro</h2>
+  <div class="detalle-grid">
+    <p><strong>RUT:</strong> {{ miembro.rut }}</p>
+    <p><strong>Nombre:</strong> {{ miembro.nombre }}</p>
+    <p><strong>Telefono:</strong> {{ miembro.telefono }}</p>
+    <p><strong>Email:</strong> {{ miembro.email or 'N/A' }}</p>
+    <p><strong>Grado academico:</strong> {{ miembro.grado_academico }}</p>
+    <p><strong>Comuna:</strong> {{ miembro.comuna }}</p>
+    <p><strong>Registro:</strong> {{ miembro.created_at.strftime('%d-%m-%Y %H:%M') }}</p>
+  </div>
+</section>
+
+<section class="card">
+  <h3>Actividades registradas</h3>
+  {% if actividades %}
+    <div class="actividades-listado">
+      {% for actividad in actividades %}
+        <article class="actividad-detalle">
+          <p><strong>Nombre:</strong> {{ actividad.nombre }}</p>
+          <p><strong>Descripcion:</strong> {{ actividad.descripcion }}</p>
+          <p><strong>Tipo:</strong> {{ actividad.tipo.capitalize() }}</p>
+          <p><strong>Fecha:</strong> {{ actividad.fecha.strftime('%d-%m-%Y') }}</p>
+          <p><strong>Duracion:</strong> {{ actividad.horas }} horas</p>
+
+          <div class="galeria-fotos">
+            {% for foto in actividad.fotos %}
+              <figure>
+                <img src="{{ url_for('static', filename=foto.ruta_archivo) }}" alt="{{ foto.nombre_original }}">
+                <figcaption>{{ foto.nombre_original }}</figcaption>
+              </figure>
+            {% else %}
+              <p>Sin fotos asociadas.</p>
+            {% endfor %}
+          </div>
+
+          <section class="comentarios" data-actividad-id="{{ actividad.id }}">
+            <h4>Comentarios</h4>
+            <div class="comentarios-lista" aria-live="polite">
+              <p class="hint">Cargando comentarios...</p>
+            </div>
+
+            <form class="comentario-form" novalidate>
+              <label for="comentario-nombre-{{ actividad.id }}">Nombre comentarista</label>
+              <input type="text" id="comentario-nombre-{{ actividad.id }}" name="nombre" minlength="3" maxlength="80" required>
+              <span class="error" data-error="nombre"></span>
+
+              <label for="comentario-texto-{{ actividad.id }}">Comentario</label>
+              <textarea id="comentario-texto-{{ actividad.id }}" name="texto" rows="4" cols="50" minlength="5" maxlength="300" required></textarea>
+              <span class="error" data-error="texto"></span>
+
+              <button type="submit" class="button-primary">Agregar comentario</button>
+            </form>
+          </section>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>Este miembro aun no tiene actividades registradas.</p>
+  {% endif %}
+</section>
+
+<script src="{{ url_for('static', filename='js/comments.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Portada{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h2>Bienvenido al sistema de registro de miembros</h2>
+  <p>
+    Desde este menu puede registrar miembros y sus actividades, revisar el listado paginado
+    y consultar estadisticas en la siguiente tarea.
+  </p>
+</section>
+
+<section class="card">
+  <h3>Ultimos 5 miembros registrados</h3>
+  {% if ultimos_miembros %}
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>RUT</th>
+          <th>Nombre</th>
+          <th>Telefono</th>
+          <th>Email</th>
+          <th>Grado academico</th>
+          <th>Comuna</th>
+          <th>Fecha registro</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for miembro in ultimos_miembros %}
+          <tr>
+            <td>{{ miembro.rut }}</td>
+            <td>{{ miembro.nombre }}</td>
+            <td>{{ miembro.telefono }}</td>
+            <td>{{ miembro.email or 'N/A' }}</td>
+            <td>{{ miembro.grado_academico }}</td>
+            <td>{{ miembro.comuna }}</td>
+            <td>{{ miembro.created_at.strftime('%d-%m-%Y %H:%M') }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Aun no hay miembros registrados.</p>
+  {% endif %}
+</section>
+{% endblock %}
